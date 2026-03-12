@@ -564,7 +564,9 @@ enum UpdaterSource : Equatable {
 
 
 private func resetUpdater() {
-    
+    // Auto-update checking disabled
+    return
+
     #if !GITHUB
         let update:()->Void = {
             let url = Bundle.main.infoDictionary!["SUFeedURL"] as! String
@@ -576,19 +578,19 @@ private func resetUpdater() {
                 driver?.checkForUpdates(at: URL(string: url)!, host: host, domain: updater.host)
             }
         }
-    
-    
+
+
         let signal: Signal<Never, NoError> = Signal { subscriber in
             update()
             subscriber.putCompletion()
             return EmptyDisposable
             } |> delay(20 * 60, queue: .mainQueue()) |> restart
         disposable.set(signal.start())
-    
+
         update()
     #endif
-    
-   
+
+
 }
 
 private var updaterSource: UpdaterSource? = nil

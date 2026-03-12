@@ -35,7 +35,7 @@ private func generateMaskImage(size: NSSize, y: CGFloat) -> CGImage? {
 
 
 public class FoldingTextLayout {
-    
+
     struct ViewLayout {
         let text: TextViewLayout
         let arrowDown: CGImage?
@@ -46,22 +46,22 @@ public class FoldingTextLayout {
         let size: NSSize
         func updated(width: CGFloat, revealed: Bool, collapsable: Bool, isBigEmoji: Bool) -> ViewLayout {
             text.measure(width: width, isBigEmoji: isBigEmoji)
-            
+
             let isRevealed = revealed || text.blockQuotes.isEmpty || text.lines.count <= 3 || !collapsable
-            
+
             let size: NSSize
             if isRevealed {
                 size = text.layoutSize
             } else {
                 size = NSMakeSize(text.layoutSize.width, text.lines[1].frame.maxY + 8)
             }
-            
+
             let arrowDown: CGImage?
             let arrowUp: CGImage?
-            
+
             if text.hasBlockQuotes && canReveal {
                 let mainColor = text.blockQuotes[0].colors.main
-                
+
                 let generateArrow:(NSSize, CGContext)->Void = { size, context in
                     context.clear(CGRect(origin: CGPoint(), size: size))
                     context.setStrokeColor(mainColor.cgColor)
@@ -74,54 +74,80 @@ public class FoldingTextLayout {
                     context.addLine(to: CGPoint(x: size.width - 1.0, y: 1.0))
                     context.strokePath()
                 }
-                
+
                 arrowDown = self.arrowDown ?? generateImage(CGSize(width: 10, height: 7), rotatedContext: generateArrow)
                 arrowUp = self.arrowUp ?? generateImage(CGSize(width: 10, height: 7), contextGenerator: generateArrow)
             } else {
                 arrowDown = nil
                 arrowUp = nil
             }
-            
-            
+
+
             if text.hasBlockQuotes && !isRevealed {
                 return .init(text: text, arrowDown: arrowDown, arrowUp: arrowUp, mask: generateMaskImage(size: NSMakeSize(size.width, size.height - 5), y: text.lines[0].frame.maxY + 2), isRevealed: isRevealed, collapsable: collapsable, size: size)
             } else {
                 return .init(text: text, arrowDown: arrowDown, arrowUp: arrowUp, mask: nil, isRevealed: isRevealed, collapsable: collapsable, size: size)
             }
         }
-        
+
         var layoutSize: NSSize {
             return self.text.layoutSize
         }
-        
+
         var canReveal: Bool {
             return collapsable && !self.text.blockQuotes.isEmpty && self.text.lines.count > 3
         }
-        
+
         func makeImageBlock(backgroundColor: NSColor) {
             self.text.maskBlockImage = self.text.generateBlock(backgroundColor: backgroundColor)
         }
     }
-    
-    var blocks:[ViewLayout]
+
+    enum Block {
+        case text(ViewLayout)
+        case table(MarkdownTableLayout)
+
+        var asText: ViewLayout? {
+            if case .text(let vl) = self { return vl }
+            return nil
+        }
+
+        var blockSize: NSSize {
+            switch self {
+            case .text(let vl):
+                return vl.isRevealed ? vl.layoutSize : vl.size
+            case .table(let tl):
+                return tl.size
+            }
+        }
+
+        var layoutSize: NSSize {
+            switch self {
+            case .text(let vl):
+                return vl.layoutSize
+            case .table(let tl):
+                return tl.size
+            }
+        }
+    }
+
+    var blocks: [Block]
     var revealed: Set<Int>
     let context: AccountContext
     let attributedString: NSAttributedString
     private var width: CGFloat = 0
-    
+
     var string: String {
         return attributedString.string
     }
-    
-    init(attributedString: NSAttributedString, blocks: [TextViewLayout], context: AccountContext, revealed: Set<Int>) {
+
+    init(attributedString: NSAttributedString, blocks: [Block], context: AccountContext, revealed: Set<Int>) {
         self.context = context
         self.attributedString = attributedString
-        self.blocks = blocks.enumerated().map {
-            ViewLayout(text: $0.element, arrowDown: nil, arrowUp: nil, mask: nil, isRevealed: revealed.contains($0.offset), collapsable: $0.element.blockCollapsable, size: .zero)
-        }
+        self.blocks = blocks
         self.revealed = revealed
     }
-    
+
     func toggle(_ index: Int) {
         if revealed.contains(index) {
             revealed.remove(index)
@@ -130,85 +156,122 @@ public class FoldingTextLayout {
         }
         self.measure(width: self.width)
     }
-    
+
     func applyRanges(_ ranges: [(NSRange, Int)]) {
         for range in ranges {
             if blocks.count > range.1 {
-                self.blocks[range.1].text.selectedRange.range = range.0
+                if case .text(let vl) = blocks[range.1] {
+                    vl.text.selectedRange.range = range.0
+                }
             }
         }
     }
-    
+
     func set(_ interactions: TextViewInteractions) {
         for block in blocks {
-            block.text.interactions = interactions
+            if case .text(let vl) = block {
+                vl.text.interactions = interactions
+            }
         }
     }
-    
+
     var lastLineIsRtl: Bool {
-        return blocks.last?.text.lastLineIsRtl ?? false
-    }
-    
-    var lastLineIsBlock: Bool {
-        return blocks.last?.text.lastLineIsBlock ?? false
-    }
-    
-    var linesCount: Int {
-        return blocks.reduce(0, { $0 + $1.text.lines.count })
-    }
-    
-    var lastLine: TextViewLine? {
-        return blocks.last?.text.lines.last
-    }
-    
-    var hasBlockQuotes: Bool {
-        return blocks.contains(where: { $0.text.hasBlockQuotes })
-    }
-    
-    var lastLineIsQuote: Bool {
-        return blocks.last?.text.lastLineIsQuote ?? false
-    }
-    
-    func makeImageBlock(backgroundColor: NSColor) {
-        for i in 0 ..< blocks.count {
-            blocks[i].makeImageBlock(backgroundColor: backgroundColor)
+        for block in blocks.reversed() {
+            if case .text(let vl) = block {
+                return vl.text.lastLineIsRtl
+            }
         }
+        return false
     }
-    
-    var hasSelectedText: Bool {
-        return blocks.contains(where: { $0.text.selectedRange.hasSelectText })
+
+    var lastLineIsBlock: Bool {
+        for block in blocks.reversed() {
+            if case .text(let vl) = block {
+                return vl.text.lastLineIsBlock
+            }
+        }
+        return false
     }
-    
-    func rect(for text: String) -> NSRect? {
-        
-        for block in blocks {
-            let range = block.text.attributedString.string.nsstring.range(of: text)
-            if range.location != NSNotFound {
-                return block.text.rects(range).first?.0
+
+    var linesCount: Int {
+        return blocks.reduce(0, { count, block in
+            if case .text(let vl) = block {
+                return count + vl.text.lines.count
+            }
+            return count + 1
+        })
+    }
+
+    var lastLine: TextViewLine? {
+        for block in blocks.reversed() {
+            if case .text(let vl) = block {
+                return vl.text.lines.last
             }
         }
         return nil
     }
-    
-    var merged: TextViewLayout {
-        let lines = self.blocks.reduce([], {
-            $0 + $1.text.lines
+
+    var hasBlockQuotes: Bool {
+        return blocks.contains(where: {
+            if case .text(let vl) = $0 { return vl.text.hasBlockQuotes }
+            return false
         })
-        var range: NSRange = NSMakeRange(NSNotFound, 0)
-        
-        let attributedString = NSMutableAttributedString()
-        
-        var offset: Int = 0
+    }
+
+    var lastLineIsQuote: Bool {
+        for block in blocks.reversed() {
+            if case .text(let vl) = block {
+                return vl.text.lastLineIsQuote
+            }
+        }
+        return false
+    }
+
+    func makeImageBlock(backgroundColor: NSColor) {
+        for i in 0 ..< blocks.count {
+            if case .text(let vl) = blocks[i] {
+                vl.makeImageBlock(backgroundColor: backgroundColor)
+            }
+        }
+    }
+
+    var hasSelectedText: Bool {
+        return blocks.contains(where: {
+            if case .text(let vl) = $0 { return vl.text.selectedRange.hasSelectText }
+            return false
+        })
+    }
+
+    func rect(for text: String) -> NSRect? {
         for block in blocks {
-            let current = block.text.selectedRange.range
+            if case .text(let vl) = block {
+                let range = vl.text.attributedString.string.nsstring.range(of: text)
+                if range.location != NSNotFound {
+                    return vl.text.rects(range).first?.0
+                }
+            }
+        }
+        return nil
+    }
+
+    var merged: TextViewLayout {
+        let textBlocks = blocks.compactMap { $0.asText }
+        let lines = textBlocks.reduce([], { $0 + $1.text.lines })
+        var range: NSRange = NSMakeRange(NSNotFound, 0)
+
+        let attributedString = NSMutableAttributedString()
+
+        var offset: Int = 0
+        for vl in textBlocks {
+            let current = vl.text.selectedRange.range
             if current.location != NSNotFound {
                 if range.location == NSNotFound {
                     range.location = offset + current.location
                 }
                 range.length += current.length
             }
-            offset += block.text.string.length
-            attributedString.append(block.text.attributedString)
+            offset += vl.text.string.length
+            attributedString.append(vl.text.attributedString)
         }
         let merged = TextViewLayout(attributedString)
         merged.lines = lines
@@ -220,26 +283,28 @@ public class FoldingTextLayout {
     var size: NSSize {
         var size: NSSize = .zero
         for block in blocks {
-            if block.isRevealed {
-                size.height += block.layoutSize.height
-            } else {
-                size.height += block.size.height
-            }
+            size.height += block.blockSize.height
             size.width = max(block.layoutSize.width, size.width)
         }
         return size
     }
-    
+
     func measure(width: CGFloat, isBigEmoji: Bool = false) {
         self.width = width
         for i in 0 ..< blocks.count {
-            blocks[i] = blocks[i].updated(width: width, revealed: self.revealed.contains(i), collapsable: blocks[i].collapsable, isBigEmoji: isBigEmoji)
+            switch blocks[i] {
+            case .text(let vl):
+                blocks[i] = .text(vl.updated(width: width, revealed: self.revealed.contains(i), collapsable: vl.collapsable, isBigEmoji: isBigEmoji))
+            case .table(let tl):
+                let newLayout = MarkdownTableLayout(table: tl.table, width: width, font: tl.font, headerFont: tl.headerFont, textColor: tl.textColor, headerTextColor: tl.headerTextColor, headerBackgroundColor: tl.headerBackgroundColor, borderColor: tl.borderColor)
+                blocks[i] = .table(newLayout)
+            }
         }
     }
-    
-    
+
+
     static func breakString(_ string: NSAttributedString) -> [NSAttributedString] {
-        
+
         var results = [NSAttributedString]()
         let length = string.length
 
@@ -278,7 +343,7 @@ public class FoldingTextLayout {
         if rangeStart < length {
             let finalRange = NSRange(location: rangeStart, length: length - rangeStart)
             var finalText = string.attributedSubstring(from: finalRange)
-            
+
             if finalText.string.hasPrefix("\n") {
                 finalText = finalText.attributedSubstring(from: NSRange(location: 1, length: finalText.length - 1))
             }
@@ -289,9 +354,122 @@ public class FoldingTextLayout {
 
         return results
     }
-    
+
+    enum BrokenBlock {
+        case text(NSAttributedString)
+        case table(MarkdownTable)
+    }
+
+    static func breakStringWithTables(_ string: NSAttributedString) -> [BrokenBlock] {
+        // First split by quote attributes (existing logic)
+        let textBlocks = breakString(string)
+
+        #if DEBUG
+        NSLog("[MarkdownTable] breakStringWithTables called, textBlocks count: \(textBlocks.count), full text length: \(string.length)")
+        #endif
+
+        var result: [BrokenBlock] = []
+        for block in textBlocks {
+            // Don't look for tables inside blockquote/code blocks
+            let hasQuote = block.length > 0 && block.containsAttribute(attributeName: TextInputAttributes.quote) != nil
+            if hasQuote {
+                result.append(.text(block))
+                continue
+            }
+
+            let plainText = block.string
+
+            #if DEBUG
+            if plainText.contains("|") {
+                NSLog("[MarkdownTable] Block contains '|', text: \(plainText.prefix(200))")
+            }
+            #endif
+
+            let tableRegions = MarkdownTableParser.parse(plainText)
+
+            #if DEBUG
+            if !tableRegions.isEmpty {
+                NSLog("[MarkdownTable] Found \(tableRegions.count) table(s) in block!")
+            }
+            #endif
+
+            if tableRegions.isEmpty {
+                result.append(.text(block))
+                continue
+            }
+
+            // Split this text block around the table regions
+            var cursor = 0
+            for region in tableRegions {
+                // Text before table
+                if region.range.location > cursor {
+                    let beforeRange = NSRange(location: cursor, length: region.range.location - cursor)
+                    var beforeText = block.attributedSubstring(from: beforeRange)
+                    // Trim leading newline
+                    if beforeText.string.hasPrefix("\n") {
+                        beforeText = beforeText.attributedSubstring(from: NSRange(location: 1, length: beforeText.length - 1))
+                    }
+                    // Trim trailing newline
+                    if beforeText.string.hasSuffix("\n") {
+                        beforeText = beforeText.attributedSubstring(from: NSRange(location: 0, length: beforeText.length - 1))
+                    }
+                    if beforeText.length > 0 {
+                        result.append(.text(beforeText))
+                    }
+                }
+
+                result.append(.table(region.table))
+                cursor = region.range.location + region.range.length
+            }
+
+            // Text after last table
+            if cursor < block.length {
+                let afterRange = NSRange(location: cursor, length: block.length - cursor)
+                var afterText = block.attributedSubstring(from: afterRange)
+                if afterText.string.hasPrefix("\n") {
+                    afterText = afterText.attributedSubstring(from: NSRange(location: 1, length: afterText.length - 1))
+                }
+                if afterText.length > 0 {
+                    result.append(.text(afterText))
+                }
+            }
+        }
+
+        return result
+    }
+
     static func make(_ string: NSAttributedString, context: AccountContext, revealed: Set<Int>, takeLayout:@escaping(NSAttributedString)->TextViewLayout) -> FoldingTextLayout {
-        return FoldingTextLayout(attributedString: string, blocks: FoldingTextLayout.breakString(string).map(takeLayout), context: context, revealed: revealed)
+        let brokenBlocks = breakStringWithTables(string)
+
+        #if DEBUG
+        let tableCount = brokenBlocks.filter { if case .table = $0 { return true }; return false }.count
+        if tableCount > 0 {
+            NSLog("[MarkdownTable] make() producing \(brokenBlocks.count) blocks, \(tableCount) table(s)")
+        }
+        #endif
+
+        let blocks: [Block] = brokenBlocks.enumerated().map { (index, broken) in
+            switch broken {
+            case .text(let attrStr):
+                let textLayout = takeLayout(attrStr)
+                let vl = ViewLayout(text: textLayout, arrowDown: nil, arrowUp: nil, mask: nil, isRevealed: revealed.contains(index), collapsable: textLayout.blockCollapsable, size: .zero)
+                return .text(vl)
+            case .table(let table):
+                let layout = MarkdownTableLayout(
+                    table: table,
+                    width: 0,
+                    font: .normal(theme.fontSize),
+                    headerFont: .bold(theme.fontSize),
+                    textColor: theme.colors.text,
+                    headerTextColor: theme.colors.text,
+                    headerBackgroundColor: theme.colors.grayBackground,
+                    borderColor: theme.colors.border
+                )
+                return .table(layout)
+            }
+        }
+
+        return FoldingTextLayout(attributedString: string, blocks: blocks, context: context, revealed: revealed)
     }
 }
 
@@ -721,37 +899,58 @@ class FoldingTextView : View {
     
     func update(layout: FoldingTextLayout, animated: Bool) {
         self.layouts = layout
-        
-        
+
         let transition: ContainedViewLayoutTransition = animated ? .animated(duration: 0.2, curve: .easeOut) : .immediate
 
-        while self.subviews.count > layout.blocks.count {
-            self.subviews.last?.removeFromSuperview()
-        }
-        while self.subviews.count < layout.blocks.count {
-            self.subviews.append(WrapperView(frame: .zero))
-        }
-        for (i, textLayout) in layout.blocks.enumerated() {
-            let view = self.subviews[i] as! WrapperView
-            view.update(textLayout, isRevealed: layout.revealed.contains(i), context: layout.context, transition: transition)
-            view.textView.userInteractionEnabled = userInteractionEnabled
-            view.textView.sendDownAnyway = true
-            view.textView.removeAllHandlers()
-            
-            var ignoreNext: Bool = false
-            view.textView.set(handler: { control in
-                if let view = control as? TextView {
-                    ignoreNext = view.selectionWasCleared
+        // Check if block types changed — if so, rebuild all subviews
+        let needsRebuild = self.subviews.count != layout.blocks.count || layout.blocks.enumerated().contains(where: { (i, block) in
+            if i >= self.subviews.count { return true }
+            switch block {
+            case .text: return !(self.subviews[i] is WrapperView)
+            case .table: return !(self.subviews[i] is MarkdownTableView)
+            }
+        })
+
+        if needsRebuild {
+            self.subviews.forEach { $0.removeFromSuperview() }
+            for block in layout.blocks {
+                switch block {
+                case .text:
+                    self.addSubview(WrapperView(frame: .zero))
+                case .table:
+                    self.addSubview(MarkdownTableView(frame: .zero))
                 }
-            }, for: .Down)
-            
-            view.textView.set(handler: { [weak self] control in
-                if self?.hasSelectedText == false, !ignoreNext {
-                    self?.revealBlockAtIndex?(i)
-                }
-            }, for: .Click)
+            }
         }
-        
+
+        for (i, block) in layout.blocks.enumerated() {
+            switch block {
+            case .text(let viewLayout):
+                let wrapperView = self.subviews[i] as! WrapperView
+                wrapperView.update(viewLayout, isRevealed: layout.revealed.contains(i), context: layout.context, transition: transition)
+                wrapperView.textView.userInteractionEnabled = userInteractionEnabled
+                wrapperView.textView.sendDownAnyway = true
+                wrapperView.textView.removeAllHandlers()
+
+                var ignoreNext: Bool = false
+                wrapperView.textView.set(handler: { control in
+                    if let view = control as? TextView {
+                        ignoreNext = view.selectionWasCleared
+                    }
+                }, for: .Down)
+
+                wrapperView.textView.set(handler: { [weak self] control in
+                    if self?.hasSelectedText == false, !ignoreNext {
+                        self?.revealBlockAtIndex?(i)
+                    }
+                }, for: .Click)
+
+            case .table(let tableLayout):
+                let tableView = self.subviews[i] as! MarkdownTableView
+                tableView.update(tableLayout)
+            }
+        }
+
         self.updateLayout(size: layout.size, transition: transition)
     }
     
@@ -761,9 +960,10 @@ class FoldingTextView : View {
     
     private func updateLayouts() {
         for subview in subviews {
-            let view = subview as! WrapperView
-            view.textView.userInteractionEnabled = userInteractionEnabled
-            view.textView.isSelectable = textSelectable
+            if let view = subview as? WrapperView {
+                view.textView.userInteractionEnabled = userInteractionEnabled
+                view.textView.isSelectable = textSelectable
+            }
         }
     }
     
@@ -778,7 +978,7 @@ class FoldingTextView : View {
     }
     
     var textLayouts: [TextViewLayout] {
-        return self.layouts?.blocks.map { $0.text } ?? []
+        return self.layouts?.blocks.compactMap { $0.asText?.text } ?? []
     }
     func highlight(text: String, color: NSColor) {
         for textView in textViews {
@@ -796,10 +996,12 @@ class FoldingTextView : View {
     
     func clickInContent(point: NSPoint) -> Bool {
         let point = self.convert(point, from: self)
-        
+
         for subview in subviews {
             if subview.frame.contains(point) {
-                let view = subview as! WrapperView
+                guard let view = subview as? WrapperView else {
+                    return subview is MarkdownTableView
+                }
                 let point = view.convert(point, from: self)
                 if let layout = view.currentLayout?.text {
                     let index = layout.findIndex(location: point)

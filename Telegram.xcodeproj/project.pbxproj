@@ -1227,6 +1227,7 @@
 		A7F2830A2395570400742C20 /* SearchSettingsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F283092395570400742C20 /* SearchSettingsController.swift */; };
 		A7F2831B239A496400742C20 /* ContextShowPeersHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F2831A239A496400742C20 /* ContextShowPeersHolder.swift */; };
 		A7F28337239A808500742C20 /* TemplateController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F28336239A808500742C20 /* TemplateController.swift */; };
+		BCCEB38F2C5AE20E3EB493FB /* MarkdownTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57CC3E12FF0E77773737451 /* MarkdownTableView.swift */; };
 		C2016F3B1EAA4538003AF981 /* RecentPeerRowItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2016F3A1EAA4538003AF981 /* RecentPeerRowItem.swift */; };
 		C201C2321E3B2D1C0026C21E /* FastSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C201C2311E3B2D1C0026C21E /* FastSettings.swift */; };
 		C20232A81D81D189007C9ADE /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20232A71D81D189007C9ADE /* ChatController.swift */; };
@@ -1613,6 +1614,7 @@
 		D0186731223807D200A77C45 /* ChatListEmptyRowItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0186730223807D200A77C45 /* ChatListEmptyRowItem.swift */; };
 		D01C731722A9814C000DA008 /* InputPasswordController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01C731622A9814C000DA008 /* InputPasswordController.swift */; };
 		D01CBE2D22A5384700F6A971 /* NotificationPreferencesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01CBE2C22A5384600F6A971 /* NotificationPreferencesController.swift */; };
+		D0221D8A19E216136B881454 /* MarkdownTableParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B651018C290423F9B5B5DAFF /* MarkdownTableParser.swift */; };
 		D0276B7D22BD6511003155D8 /* DisplayLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0276B7C22BD6511003155D8 /* DisplayLink.swift */; };
 		D02BD7C0232D0FB800D1814A /* AppAppearanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02BD7BF232D0FB800D1814A /* AppAppearanceViewController.swift */; };
 		D02BD7C3232D14E800D1814A /* ThemePreviewRowItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D02BD7C2232D14E800D1814A /* ThemePreviewRowItem.swift */; };
@@ -2930,6 +2932,7 @@
 		A7F283092395570400742C20 /* SearchSettingsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchSettingsController.swift; sourceTree = "<group>"; };
 		A7F2831A239A496400742C20 /* ContextShowPeersHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextShowPeersHolder.swift; sourceTree = "<group>"; };
 		A7F28336239A808500742C20 /* TemplateController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateController.swift; sourceTree = "<group>"; };
+		B651018C290423F9B5B5DAFF /* MarkdownTableParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTableParser.swift; sourceTree = "<group>"; };
 		C2016F3A1EAA4538003AF981 /* RecentPeerRowItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecentPeerRowItem.swift; sourceTree = "<group>"; };
 		C2016F431EAA4967003AF981 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/ShareViewController.strings"; sourceTree = "<group>"; };
 		C2016F451EAA4967003AF981 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
@@ -3436,6 +3439,7 @@
 		D0E82DFF2500F10E00E09A20 /* MergedAvatarsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergedAvatarsView.swift; sourceTree = "<group>"; };
 		D0FCA7612434867400B72F18 /* PeerInfoHeadItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeerInfoHeadItem.swift; sourceTree = "<group>"; };
 		D0FFC4AB23E184BA0044D305 /* ChatListFilterController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListFilterController.swift; sourceTree = "<group>"; };
+		E57CC3E12FF0E77773737451 /* MarkdownTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTableView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -6258,6 +6262,8 @@
 			isa = PBXGroup;
 			children = (
 				2769768E2C04C9B80016BACB /* FoldingTextView.swift */,
+				B651018C290423F9B5B5DAFF /* MarkdownTableParser.swift */,
+				E57CC3E12FF0E77773737451 /* MarkdownTableView.swift */,
 				C2AC9C171E1E687E0085C7DE /* GlobalBadgeNode.swift */,
 				27C1FF442B71F35A00B086E3 /* InteractiveTextView.swift */,
 			);
@@ -7116,6 +7122,7 @@
 				D098C7111D7E175A007784E4 /* Sources */,
 				D098C7131D7E175A007784E4 /* Resources */,
 				C232EA661E1D041B00C4D38C /* Embed App Extensions */,
+				AA000001FIXFIREBASE00000 /* Fix Firebase Shallow Bundles */,
 				C23D0D7B1F1A648600AF5151 /* Fonts */,
 				C2786FF51FEC128F001FB044 /* Palettes */,
 				C2D85FD51F25FE5400EDEA15 /* ShellScript */,
@@ -7870,6 +7877,20 @@
 			shellPath = /bin/sh;
 			shellScript = "sh ${PROJECT_DIR}/tools/bump_build_number.sh \"${PROJECT_DIR}/${INFOPLIST_FILE}\"\nsh ${PROJECT_DIR}/tools/sync_share_version.sh \"${PROJECT_DIR}/${INFOPLIST_FILE}\" \"${PROJECT_DIR}/TelegramShare/Info.plist\"\n";
 		};
+		AA000001FIXFIREBASE00000 /* Fix Firebase Shallow Bundles */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Fix Firebase Shallow Bundles";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Convert shallow bundles to versioned bundles for Xcode 26 compatibility\nFW_DIR=\"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}\"\nfor fw in GoogleAppMeasurement FirebaseAnalytics GoogleAppMeasurementIdentitySupport; do\n  fwpath=\"$FW_DIR/${fw}.framework\"\n  if [ -d \"$fwpath\" ] && [ -f \"$fwpath/Info.plist\" ] && [ ! -d \"$fwpath/Versions\" ]; then\n    mkdir -p \"$fwpath/Versions/A/Resources\"\n    mv \"$fwpath/Info.plist\" \"$fwpath/Versions/A/Resources/Info.plist\"\n    mv \"$fwpath/$fw\" \"$fwpath/Versions/A/$fw\"\n    ln -sf A \"$fwpath/Versions/Current\"\n    ln -sf Versions/Current/Resources \"$fwpath/Resources\"\n    ln -sf \"Versions/Current/$fw\" \"$fwpath/$fw\"\n  fi\ndone\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -8555,6 +8576,8 @@
 				27BE52522DA9307C00F40837 /* StarGift_MarketplaceController.swift in Sources */,
 				D0276B7D22BD6511003155D8 /* DisplayLink.swift in Sources */,
 				2769768F2C04C9B80016BACB /* FoldingTextView.swift in Sources */,
+				D0221D8A19E216136B881454 /* MarkdownTableParser.swift in Sources */,
+				BCCEB38F2C5AE20E3EB493FB /* MarkdownTableView.swift in Sources */,
 				9F0B8F171FFB7F1A00073D3F /* AccentColorRowItem.swift in Sources */,
 				C2DE5D301F3CA7C00081EC1E /* InstantPageLinkSelectionView.swift in Sources */,
 				A742CE45241A517800C6B69B /* ChannelRecentPostRowItem.swift in Sources */,
@@ -9127,7 +9150,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 245482;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = 6N38VWS5BX;
+				DEVELOPMENT_TEAM = JNDLGFT5J9;
 				ENABLE_BITCODE = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -9169,8 +9192,6 @@
 				OTHER_CODE_SIGN_FLAGS = "";
 				OTHER_LDFLAGS = (
 					"-ObjC",
-					"-Wl,-ld_classic",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/macosx/libswiftAppKit.dylib",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = ru.keepcoder.Telegram;
@@ -9198,7 +9219,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 245682;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 6N38VWS5BX;
+				DEVELOPMENT_TEAM = JNDLGFT5J9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = c17;
@@ -9224,7 +9245,7 @@
 				MARKETING_VERSION = 11.15;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CODE_SIGN_FLAGS = "";
-				OTHER_LDFLAGS = "$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/macosx/libswiftAppKit.dylib";
+				OTHER_LDFLAGS = "";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = ru.keepcoder.Telegram.TelegramShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -9250,7 +9271,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 245682;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 6N38VWS5BX;
+				DEVELOPMENT_TEAM = JNDLGFT5J9;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_C_LANGUAGE_STANDARD = c17;
@@ -9276,7 +9297,7 @@
 				MARKETING_VERSION = 11.15;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_CODE_SIGN_FLAGS = "";
-				OTHER_LDFLAGS = "$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/macosx/libswiftAppKit.dylib";
+				OTHER_LDFLAGS = "";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				"OTHER_SWIFT_FLAGS[arch=*]" = "";
 				PRODUCT_BUNDLE_IDENTIFIER = ru.keepcoder.Telegram.TelegramShare;
@@ -9358,7 +9379,7 @@
 				CURRENT_PROJECT_VERSION = 245482;
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 6N38VWS5BX;
+				DEVELOPMENT_TEAM = JNDLGFT5J9;
 				ENABLE_BITCODE = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -9400,8 +9421,6 @@
 				OTHER_CODE_SIGN_FLAGS = "";
 				OTHER_LDFLAGS = (
 					"-ObjC",
-					"-Wl,-ld_classic",
-					"$(TOOLCHAIN_DIR)/usr/lib/swift-5.0/macosx/libswiftAppKit.dylib",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = ru.keepcoder.Telegram;

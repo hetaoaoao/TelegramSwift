@@ -66,6 +66,7 @@ public struct TextInputAttributes {
     public static let quote = NSAttributedString.Key(rawValue: "Attribute__Blockquote")
     
     public static let embedded = NSAttributedString.Key(rawValue: "Attribute__EmbeddedItem")
+    public static let table = NSAttributedString.Key(rawValue: "Attribute__Table")
 
     public static let allAttributes = [TextInputAttributes.bold, TextInputAttributes.italic, TextInputAttributes.monospace, TextInputAttributes.strikethrough, TextInputAttributes.underline, TextInputAttributes.textMention, TextInputAttributes.textUrl, TextInputAttributes.spoiler, TextInputAttributes.customEmoji, TextInputAttributes.code, TextInputAttributes.quote]
 }
@@ -219,6 +220,39 @@ public final class TextViewBlockQuoteData: NSObject {
             return false
         }
         return true
+    }
+}
+
+
+public struct MarkdownTable {
+    public enum Alignment {
+        case left, center, right
+    }
+    public let headers: [String]
+    public let alignments: [Alignment]
+    public let rows: [[String]]
+    public let columnCount: Int
+
+    public init(headers: [String], alignments: [Alignment], rows: [[String]]) {
+        self.headers = headers
+        self.alignments = alignments
+        self.columnCount = headers.count
+        self.rows = rows.map { row in
+            if row.count < headers.count {
+                return row + Array(repeating: "", count: headers.count - row.count)
+            } else if row.count > headers.count {
+                return Array(row.prefix(headers.count))
+            }
+            return row
+        }
+    }
+}
+
+public final class TextViewTableData: NSObject {
+    public let table: MarkdownTable
+    public init(table: MarkdownTable) {
+        self.table = table
+        super.init()
     }
 }
 
